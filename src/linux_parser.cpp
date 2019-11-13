@@ -67,7 +67,7 @@ vector<int> LinuxParser::Pids() {
   return pids;
 }
 
-// TODO: Read and return the system memory utilization
+// TODO: [DONE] Read and return the system memory utilization
 float LinuxParser::MemoryUtilization() {
     static float totalMemory; // we will only need to read this once, technically
     float memAvailable = 0.0;
