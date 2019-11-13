@@ -4,8 +4,7 @@
 #include "system.h"
 #include "linux_parser.h"
 
-void RunLinuxParserTest(System &system) {
-
+static void memoryUtilization(System &system) {
     std::cout << "LinuxParser correctly parses memory utilization... ";
 
     const float memory = LinuxParser::MemoryUtilization();
@@ -15,4 +14,8 @@ void RunLinuxParserTest(System &system) {
     assert(system.MemoryUtilization() == memory);
 
     std::cout << "PASS." << std::endl;
+}
+
+void RunLinuxParserTest(System &system) {
+    memoryUtilization(system);
 }
