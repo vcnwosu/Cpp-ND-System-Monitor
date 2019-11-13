@@ -9,6 +9,7 @@ set(SOURCES
     ${TEST_SOURCES}
     ../src/linux_parser.cpp
     ../src/system.cpp
+    ../src/format.cpp
 )
 
 add_executable(test ${SOURCES})
