@@ -32,6 +32,8 @@ static void uptime(System &system) {
 }
 
 void RunLinuxParserTest(System &system) {
+    std::cout << "Testing the LinuxParser namespace..." << std::endl;
+
     memoryUtilization(system);
     uptime(system);
 }
