@@ -3,7 +3,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
-#include <filesystem>
+#include <experimental/filesystem>
 #include <iostream>
 
 #include "linux_parser.h"
@@ -13,6 +13,8 @@ using std::stod;
 using std::string;
 using std::to_string;
 using std::vector;
+
+namespace fs = std::experimental::filesystem;
 
 // DONE: An example of how to read data from the filesystem
 string LinuxParser::OperatingSystem() {
@@ -54,8 +56,8 @@ string LinuxParser::Kernel() {
 vector<int> LinuxParser::Pids() {
     vector<int> pids;
 
-    for (auto &entry: std::filesystem::directory_iterator(kProcDirectory)) {
-        if (std::filesystem::is_directory(entry.path())) {
+    for (auto &entry: fs::directory_iterator(kProcDirectory)) {
+        if (fs::is_directory(entry.path())) {
             try {
                 int pid = std::stoi(entry.path().filename());
                 pids.push_back(pid);
@@ -177,8 +179,8 @@ long LinuxParser::ActiveJiffies(int pid) {
 
 // TODO: [DONE] Read and return the number of active jiffies for the system
 long LinuxParser::ActiveJiffies() {
-    /*for (auto &entry: std::filesystem::directory_iterator(kProcDirectory)) {
-        if (std::filesystem::is_directory(entry.path())) {
+    /*for (auto &entry: fs::directory_iterator(kProcDirectory)) {
+        if (fs::is_directory(entry.path())) {
             try {
                 active_jiffies += LinuxParser::ActiveJiffies(std::stoi(entry.path().filename()));
             } catch (const std::invalid_argument &ia) {}
