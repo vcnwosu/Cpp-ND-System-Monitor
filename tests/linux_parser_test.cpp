@@ -1,9 +1,64 @@
 #include <iostream>
+#include <filesystem>
+#include <string>
+#include <vector>
 
 #include "system.h"
 #include "linux_parser.h"
 #include "format.h"
 #include "test_assert.h"
+
+static void procProcesses(System &system) {
+    test("LinuxParser correctly parses process /proc data...");
+
+    int pid = 0;
+
+    for (auto &entry: std::filesystem::directory_iterator(LinuxParser::kProcDirectory)) {
+        if (std::filesystem::is_directory(entry.path())) {
+            try {
+                pid = std::stoi(entry.path().filename());
+                break;
+            } catch (const std::invalid_argument &ia) {}
+        }
+    }
+
+    assertGreaterThan(LinuxParser::ActiveJiffies(pid), 0);
+    assertNotEqual(LinuxParser::Command(pid), "");
+    assertNotEqual(LinuxParser::Ram(pid), "0.00%");
+    assertEqual(LinuxParser::Uid(pid), "0");
+}
+
+static void cpuUtilization(System &system) {
+    test("LinuxParser correctly parses CPU utilization...");
+
+    std::vector<std::string> utilization = LinuxParser::CpuUtilization();
+
+    assertEqual(utilization.size(), 10);
+    assertNotEqual(utilization[0], "0%"); // user space
+    assertNotEqual(utilization[3], "0%"); // idle
+}
+
+static void jiffies(System &system) {
+    test("LinuxParser correctly parses jiffies...");
+
+    assertGreaterThan(LinuxParser::Jiffies(), 0);
+
+    int pid = 0;
+    std::string path = LinuxParser::kProcDirectory;
+
+    for (auto &entry: std::filesystem::directory_iterator(path)) {
+        if (std::filesystem::is_directory(entry.path())) {
+            try {
+                pid = std::stoi(entry.path().filename());
+                break;
+            } catch (const std::invalid_argument &ia) { }
+        }
+    }
+
+    assertGreaterThan(LinuxParser::ActiveJiffies(pid), 0);
+    assertGreaterThan(LinuxParser::ActiveJiffies(), 0);
+    assertGreaterThan(LinuxParser::IdleJiffies(), 0);
+}
 
 static void memoryUtilization(System &system) {
     test("LinuxParser correctly parses memory utilization... ");
@@ -36,4 +91,7 @@ void RunLinuxParserTest(System &system) {
 
     memoryUtilization(system);
     uptime(system);
+    jiffies(system);
+    cpuUtilization(system);
+    procProcesses(system);
 }
