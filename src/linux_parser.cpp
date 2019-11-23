@@ -297,23 +297,24 @@ int LinuxParser::TotalProcesses() {
 
 // TODO: [DONE] Read and return the number of running processes
 int LinuxParser::RunningProcesses() {
-    string line, column;
-    std::ifstream file(kProcDirectory + kStatFilename);
-    int processes = 0;
+    string line, pid, name, status;
+    int count = 0;
 
-    while (std::getline(file, line)) {
-        std::istringstream is(line);
+    for (auto &entry: fs::directory_iterator(kProcDirectory)) {
+        if (fs::exists(entry.path() / "stat")) {
+            std::ifstream file(entry.path() / "stat");
+            std::getline(file, line);
+            std::istringstream is(line);
 
-        is >> column;
+            is >> pid >> name >> status;
 
-        if (column == "procs_running") {
-            is >> column;
-            processes = std::stoi(column);
-            break;
+            if (status == "R") {
+                count++;
+            }
         }
     }
 
-    return processes;
+    return count;
 }
 
 // TODO: [DONE] Read and return the command associated with a process
@@ -334,15 +335,18 @@ string LinuxParser::Ram(int pid) {
     std::getline(file, line);
     std::istringstream is(line);
 
-    int memory = 0;
+    long memory = 0;
 
     while (is >> value) { memory += std::stoi(value); }
 
     std::ostringstream out;
-    out.precision(2);
-    out << std::fixed << (float) memory * 100 / LinuxParser::memTotal();
 
-    return out.str() + "%";
+    // 4096 for the default page size to bytes
+    // 1000000 to convert Bytes to MB
+    out << ((memory * 4096) / 1000000);
+
+    return out.str();
+
 }
 
 // TODO: [DONE] Read and return the user ID associated with a process
@@ -394,14 +398,15 @@ long LinuxParser::UpTime(int pid) {
     std::istringstream is(line);
 
     int count = 1;
-    long uptime = 0;
+    long start_time = 0;
 
     while (is >> value) {
-        if (count == 22) {
-            uptime += std::stol(value);
+        if (count++ == 22) {
+            start_time = std::stol(value);
             break;
         }
     }
 
-    return uptime / 100;
+    return LinuxParser::UpTime() - (start_time / 100); // standard Hertz approximation
+
 }
